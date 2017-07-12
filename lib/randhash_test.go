@@ -35,6 +35,14 @@ func TestPutPutSize(t *testing.T) {
 	assertEqual(t, 2, h.Size())
 }
 
+func TestPutPutDeleteSize(t *testing.T) {
+	h := NewRandHash()
+	h.Put("key", "value")
+	h.Put("key2", "value2")
+	h.Delete("key2")
+	assertEqual(t, 1, h.Size())
+}
+
 func pass(t *testing.T) {
 	t.Log("pass")
 }
