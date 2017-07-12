@@ -43,6 +43,16 @@ func TestPutPutDeleteSize(t *testing.T) {
 	assertEqual(t, 1, h.Size())
 }
 
+func TestCollisions(t *testing.T) {
+	h := NewRandHash()
+	for i := 0; i < 50; i++ {
+		h.Put(i, i)
+		rawVal := h.Get(i)
+		val := rawVal.(int)
+		assertEqual(t, i, val)
+	}
+}
+
 func pass(t *testing.T) {
 	t.Log("pass")
 }
