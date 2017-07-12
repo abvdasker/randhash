@@ -5,11 +5,14 @@ import (
 	"encoding/gob"
 	"hash/fnv"
 	"math"
+	"math/rand"
+	"time"
 )
 
 type RandHash struct {
 	backing [][]*hashValue
 	head    *cell
+	total int
 }
 
 // backing doubly linked list of pointers to hashValues
@@ -33,6 +36,7 @@ func NewRandHash() *RandHash {
 	return &RandHash{
 		backing: buildBacking(),
 		head:    new(cell),
+		total: 0,
 	}
 }
 
@@ -44,6 +48,7 @@ func (h *RandHash) Put(key interface{}, value interface{}) {
 		backingValue := buildBackingValue(key, value)
 		h.backing[idx] = append(row, backingValue)
 		h.addCell(backingValue)
+		h.total += 1
 	} else {
 		currentHashValue.key = key
 		currentHashValue.value = value
@@ -72,10 +77,31 @@ func (h *RandHash) Delete(key interface{}) interface{} {
 			}
 			updatedRow := deleteFromRow(row, index)
 			h.backing[backingIdx] = updatedRow
+			h.total -= 1
 			return hVal.value
 		}
 	}
 	return nil
+}
+
+func (h *RandHash) Sample() interface{} {
+	randIdxFloat := randFloat64() * float64(h.total)
+	randIdx := int(randIdxFloat)
+	var result interface{}
+	h.each(func (i int, hVal *hashValue) {
+		if i == randIdx {
+			result = hVal.value
+		}
+	})
+	return result
+}
+
+func (h *RandHash) each(callback func (int, *hashValue)) {
+	idx := 0
+	for current := h.head.next; current != nil; current = current.next {
+		callback(idx, current.hVal)
+		idx += 1
+	}
 }
 
 func deleteFromRow(row []*hashValue, index int) []*hashValue {
@@ -147,4 +173,9 @@ func buildBackingValue(key interface{}, value interface{}) *hashValue {
 		key:   key,
 		value: value,
 	}
+}
+
+func randFloat64() float64 {
+	newRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return newRand.Float64()
 }
