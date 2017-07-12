@@ -96,6 +96,10 @@ func (h *RandHash) Sample() interface{} {
 	return result
 }
 
+func (h *RandHash) Size() int {
+	return h.total
+}
+
 func (h *RandHash) each(callback func (int, *hashValue)) {
 	idx := 0
 	for current := h.head.next; current != nil; current = current.next {
